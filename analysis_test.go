@@ -290,6 +290,48 @@ func TestListPackages(t *testing.T) {
 				},
 			},
 		},
+		"auto-rewrite godep import paths": {
+			fileRoot:   j("godeprewrite"),
+			importRoot: "godeprewrite",
+			out: PackageTree{
+				ImportRoot: "godeprewrite",
+				Packages: map[string]PackageOrErr{
+					"godeprewrite": {
+						P: Package{
+							ImportPath:   "godeprewrite",
+							CommentPath:  "",
+							Name:         "godeprewrite",
+							GodepRewrite: true,
+							Imports: []string{
+								"github.com/sdboyer/gps",
+								"sort",
+							},
+						},
+					},
+				},
+			},
+		},
+		"auto-rewrite godep import paths, imposed path": {
+			fileRoot:   j("godeprewrite"),
+			importRoot: "arbitrary",
+			out: PackageTree{
+				ImportRoot: "arbitrary",
+				Packages: map[string]PackageOrErr{
+					"arbitrary": {
+						P: Package{
+							ImportPath:   "arbitrary",
+							CommentPath:  "",
+							Name:         "godeprewrite",
+							GodepRewrite: true,
+							Imports: []string{
+								"github.com/sdboyer/gps",
+								"sort",
+							},
+						},
+					},
+				},
+			},
+		},
 		"test only": {
 			fileRoot:   j("t"),
 			importRoot: "simple",
@@ -326,6 +368,28 @@ func TestListPackages(t *testing.T) {
 							TestImports: []string{
 								"sort",
 								"strconv",
+							},
+						},
+					},
+				},
+			},
+		},
+		"auto-rewrite godep in tests": {
+			fileRoot:   j("godeprewritetest"),
+			importRoot: "godeprewritetest",
+			out: PackageTree{
+				ImportRoot: "godeprewritetest",
+				Packages: map[string]PackageOrErr{
+					"godeprewritetest": {
+						P: Package{
+							ImportPath:       "godeprewritetest",
+							CommentPath:      "",
+							Name:             "godeprewrite",
+							Imports:          []string{},
+							TestGodepRewrite: true,
+							TestImports: []string{
+								"github.com/sdboyer/gps",
+								"sort",
 							},
 						},
 					},

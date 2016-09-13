@@ -155,9 +155,9 @@ func listPackages(fileRoot, importRoot string) (PackageTree, error) {
 			return filepath.SkipDir
 		}
 
-		// Compute the import path. Run the result through ToSlash(), so that windows
-		// paths are normalized to Unix separators, as import paths are expected
-		// to be.
+		// Compute the import path. Run the result through ToSlash(), so that
+		// windows paths are normalized to Unix separators, as the spec defines
+		// all import paths to be.
 		ip := filepath.ToSlash(filepath.Join(importRoot, strings.TrimPrefix(path, fileRoot)))
 
 		// Find all the imports, across all os/arch combos
@@ -269,6 +269,10 @@ func listPackages(fileRoot, importRoot string) (PackageTree, error) {
 				},
 			}
 		} else {
+			// Check for godep paths that'll need to be rewritten
+			pkg.GodepRewrite = rewriteGodepImports(pkg.Imports)
+			pkg.TestGodepRewrite = rewriteGodepImports(pkg.TestImports)
+
 			ptree.Packages[ip] = PackageOrErr{
 				P: pkg,
 			}
@@ -282,6 +286,29 @@ func listPackages(fileRoot, importRoot string) (PackageTree, error) {
 	}
 
 	return ptree, nil
+}
+
+// rewriteGodepImports searches for Godep-style import path munging in a set of
+// import paths, correcting any to their proper top-level import path form if
+// found.
+//
+// The return value indicates whether any import paths were rewritten in this
+// way.
+func rewriteGodepImports(imports []string) (rewr bool) {
+	for k, ip := range imports {
+		// TODO(sdboyer) do we need to guard against a case where the following
+		// string literal is the end of an import? It would need its own
+		// specific error case...
+		if idx := strings.LastIndex(ip, "Godeps/_workspace/src/"); idx != -1 {
+			// Match. Strip everything prior to the last instance of this string
+			// in the import path, which leaves us with the import path that we
+			// actually want. (22 is the len of the above string literal)
+			imports[k] = ip[idx+22:]
+			rewr = true
+		}
+	}
+
+	return
 }
 
 // LocalImportsError indicates that a package contains at least one relative
