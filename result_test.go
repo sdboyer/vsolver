@@ -19,14 +19,8 @@ func init() {
 	basicResult = solution{
 		att: 1,
 		p: []LockedProject{
-			pa2lp(atom{
-				id: pi("github.com/sdboyer/testrepo"),
-				v:  NewBranch("master").Is(Revision("4d59fb584b15a94d7401e356d2875c472d76ef45")),
-			}, nil),
-			pa2lp(atom{
-				id: pi("github.com/Masterminds/VCSTestRepo"),
-				v:  NewVersion("1.0.0").Is(Revision("30605f6ac35fcb075ad0bfa9296f90a7d891523e")),
-			}, nil),
+			NewLockedProject(pi("github.com/sdboyer/testrepo"), NewBranch("master").Is(Revision("4d59fb584b15a94d7401e356d2875c472d76ef45")), nil),
+			NewLockedProject(pi("github.com/Masterminds/VCSTestRepo"), NewVersion("1.0.0").Is(Revision("30605f6ac35fcb075ad0bfa9296f90a7d891523e")), nil),
 		},
 	}
 

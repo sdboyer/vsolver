@@ -307,7 +307,7 @@ func (s *solver) Solve() (Solution, error) {
 		soln.p = make([]LockedProject, len(all))
 		k := 0
 		for pa, pl := range all {
-			soln.p[k] = pa2lp(pa, pl)
+			soln.p[k] = s.toLockedProject(pa, pl)
 			k++
 		}
 	}
@@ -1140,7 +1140,7 @@ func (s *solver) unselectLast() (atomWithPackages, bool) {
 }
 
 // simple (temporary?) helper just to convert atoms into locked projects
-func pa2lp(pa atom, pkgs map[string]struct{}) LockedProject {
+func (s *solver) toLockedProject(pa atom, pkgs map[string]struct{}) LockedProject {
 	lp := LockedProject{
 		pi: pa.id,
 	}
@@ -1157,8 +1157,9 @@ func pa2lp(pa atom, pkgs map[string]struct{}) LockedProject {
 		panic("unreachable")
 	}
 
+	prefix := string(pa.id.ProjectRoot) + string(os.PathSeparator)
 	for pkg := range pkgs {
-		lp.pkgs = append(lp.pkgs, strings.TrimPrefix(pkg, string(pa.id.ProjectRoot)+string(os.PathSeparator)))
+		lp.pkgs = append(lp.pkgs, strings.TrimPrefix(pkg, prefix))
 	}
 	sort.Strings(lp.pkgs)
 
