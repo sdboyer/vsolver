@@ -923,16 +923,16 @@ func TestListPackages(t *testing.T) {
 
 				if !reflect.DeepEqual(out, fix.out) {
 					if len(fix.out.Packages) < 2 {
-						t.Errorf("listPackages(%q): Did not get expected PackageOrErrs:\n\t(GOT): %s\n\t(WNT): %s", name, out, fix.out)
+						t.Errorf("listPackages(%q): Did not get expected PackageOrErrs:\n\t(GOT): %+v\n\t(WNT): %+v", name, out, fix.out)
 					} else {
 						seen := make(map[string]bool)
 						for path, perr := range fix.out.Packages {
 							seen[path] = true
 							if operr, exists := out.Packages[path]; !exists {
-								t.Errorf("listPackages(%q): Expected PackageOrErr for path %s was missing from output:\n\t%s", name, path, perr)
+								t.Errorf("listPackages(%q): Expected PackageOrErr for path %s was missing from output:\n\t%+v", name, path, perr)
 							} else {
 								if !reflect.DeepEqual(perr, operr) {
-									t.Errorf("listPackages(%q): PkgOrErr for path %s was not as expected:\n\t(GOT): %s\n\t(WNT): %s", name, path, operr, perr)
+									t.Errorf("listPackages(%q): PkgOrErr for path %s was not as expected:\n\t(GOT): %+v\n\t(WNT): %+v", name, path, operr, perr)
 								}
 							}
 						}
@@ -942,7 +942,7 @@ func TestListPackages(t *testing.T) {
 								continue
 							}
 
-							t.Errorf("listPackages(%q): Got PackageOrErr for path %s, but none was expected:\n\t%s", name, path, operr)
+							t.Errorf("listPackages(%q): Got PackageOrErr for path %s, but none was expected:\n\t%+v", name, path, operr)
 						}
 					}
 				}
