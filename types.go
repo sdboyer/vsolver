@@ -166,10 +166,10 @@ type ProjectProperties struct {
 // Package represents a Go package. It contains a subset of the information
 // go/build.Package does.
 type Package struct {
-	ImportPath, CommentPath string
-	Name                    string
-	Imports                 []string
-	TestImports             []string
+	Name                           string
+	ImportPath, CommentPath        string
+	Imports, TestImports           []string
+	GodepRewrite, TestGodepRewrite bool
 }
 
 // bimodalIdentifiers are used to track work to be done in the unselected queue.

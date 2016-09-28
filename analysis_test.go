@@ -290,6 +290,48 @@ func TestListPackages(t *testing.T) {
 				},
 			},
 		},
+		"auto-rewrite godep import paths": {
+			fileRoot:   j("godeprewrite"),
+			importRoot: "godeprewrite",
+			out: PackageTree{
+				ImportRoot: "godeprewrite",
+				Packages: map[string]PackageOrErr{
+					"godeprewrite": {
+						P: Package{
+							ImportPath:   "godeprewrite",
+							CommentPath:  "",
+							Name:         "godeprewrite",
+							GodepRewrite: true,
+							Imports: []string{
+								"github.com/sdboyer/gps",
+								"sort",
+							},
+						},
+					},
+				},
+			},
+		},
+		"auto-rewrite godep import paths, imposed path": {
+			fileRoot:   j("godeprewrite"),
+			importRoot: "arbitrary",
+			out: PackageTree{
+				ImportRoot: "arbitrary",
+				Packages: map[string]PackageOrErr{
+					"arbitrary": {
+						P: Package{
+							ImportPath:   "arbitrary",
+							CommentPath:  "",
+							Name:         "godeprewrite",
+							GodepRewrite: true,
+							Imports: []string{
+								"github.com/sdboyer/gps",
+								"sort",
+							},
+						},
+					},
+				},
+			},
+		},
 		"test only": {
 			fileRoot:   j("t"),
 			importRoot: "simple",
@@ -326,6 +368,28 @@ func TestListPackages(t *testing.T) {
 							TestImports: []string{
 								"sort",
 								"strconv",
+							},
+						},
+					},
+				},
+			},
+		},
+		"auto-rewrite godep in tests": {
+			fileRoot:   j("godeprewritetest"),
+			importRoot: "godeprewritetest",
+			out: PackageTree{
+				ImportRoot: "godeprewritetest",
+				Packages: map[string]PackageOrErr{
+					"godeprewritetest": {
+						P: Package{
+							ImportPath:       "godeprewritetest",
+							CommentPath:      "",
+							Name:             "godeprewrite",
+							Imports:          []string{},
+							TestGodepRewrite: true,
+							TestImports: []string{
+								"github.com/sdboyer/gps",
+								"sort",
 							},
 						},
 					},
@@ -859,16 +923,16 @@ func TestListPackages(t *testing.T) {
 
 				if !reflect.DeepEqual(out, fix.out) {
 					if len(fix.out.Packages) < 2 {
-						t.Errorf("listPackages(%q): Did not get expected PackageOrErrs:\n\t(GOT): %s\n\t(WNT): %s", name, out, fix.out)
+						t.Errorf("listPackages(%q): Did not get expected PackageOrErrs:\n\t(GOT): %+v\n\t(WNT): %+v", name, out, fix.out)
 					} else {
 						seen := make(map[string]bool)
 						for path, perr := range fix.out.Packages {
 							seen[path] = true
 							if operr, exists := out.Packages[path]; !exists {
-								t.Errorf("listPackages(%q): Expected PackageOrErr for path %s was missing from output:\n\t%s", name, path, perr)
+								t.Errorf("listPackages(%q): Expected PackageOrErr for path %s was missing from output:\n\t%+v", name, path, perr)
 							} else {
 								if !reflect.DeepEqual(perr, operr) {
-									t.Errorf("listPackages(%q): PkgOrErr for path %s was not as expected:\n\t(GOT): %s\n\t(WNT): %s", name, path, operr, perr)
+									t.Errorf("listPackages(%q): PkgOrErr for path %s was not as expected:\n\t(GOT): %+v\n\t(WNT): %+v", name, path, operr, perr)
 								}
 							}
 						}
@@ -878,7 +942,7 @@ func TestListPackages(t *testing.T) {
 								continue
 							}
 
-							t.Errorf("listPackages(%q): Got PackageOrErr for path %s, but none was expected:\n\t%s", name, path, operr)
+							t.Errorf("listPackages(%q): Got PackageOrErr for path %s, but none was expected:\n\t%+v", name, path, operr)
 						}
 					}
 				}
