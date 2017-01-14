@@ -19,6 +19,14 @@ func renameWithFallback(src, dest string) error {
 		return err
 	}
 
+	// Windows cannot use syscall.Rename to rename a directory
+	if runtime.GOOS == "windows" && fi.IsDir() {
+		if err := copyDir(src, dest); err != nil {
+			return err
+		}
+		return os.RemoveAll(src)
+	}
+
 	err = os.Rename(src, dest)
 	if err == nil {
 		return nil
@@ -48,11 +56,7 @@ func renameWithFallback(src, dest string) error {
 		// 0x11 (ERROR_NOT_SAME_DEVICE) is the windows error.
 		// See https://msdn.microsoft.com/en-us/library/cc231199.aspx
 		if ok && noerr == 0x11 {
-			if fi.IsDir() {
-				cerr = copyDir(src, dest)
-			} else {
-				cerr = copyFile(src, dest)
-			}
+			cerr = copyFile(src, dest)
 		}
 	} else {
 		return terr
