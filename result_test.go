@@ -2,7 +2,7 @@ package gps
 
 import (
 	"os"
-	"path"
+	"path/filepath"
 	"testing"
 )
 
@@ -45,19 +45,19 @@ func TestWriteDepTree(t *testing.T) {
 
 	r := basicResult
 
-	tmp := path.Join(os.TempDir(), "vsolvtest")
+	tmp := filepath.Join(os.TempDir(), "vsolvtest")
 	os.RemoveAll(tmp)
 
 	sm, clean := mkNaiveSM(t)
 	defer clean()
 
 	// nil lock/result should err immediately
-	err := WriteDepTree(path.Join(tmp, "export"), nil, sm, true)
+	err := WriteDepTree(filepath.Join(tmp, "export"), nil, sm, true)
 	if err == nil {
 		t.Errorf("Should error if nil lock is passed to WriteDepTree")
 	}
 
-	err = WriteDepTree(path.Join(tmp, "export"), r, sm, true)
+	err = WriteDepTree(filepath.Join(tmp, "export"), r, sm, true)
 	if err != nil {
 		t.Errorf("Unexpected error while creating vendor tree: %s", err)
 	}
@@ -70,10 +70,10 @@ func BenchmarkCreateVendorTree(b *testing.B) {
 	b.SetParallelism(1)
 
 	r := basicResult
-	tmp := path.Join(os.TempDir(), "vsolvtest")
+	tmp := filepath.Join(os.TempDir(), "vsolvtest")
 
 	clean := true
-	sm, err := NewSourceManager(naiveAnalyzer{}, path.Join(tmp, "cache"))
+	sm, err := NewSourceManager(naiveAnalyzer{}, filepath.Join(tmp, "cache"))
 	if err != nil {
 		b.Errorf("NewSourceManager errored unexpectedly: %q", err)
 		clean = false
@@ -91,7 +91,7 @@ func BenchmarkCreateVendorTree(b *testing.B) {
 	if clean {
 		b.ResetTimer()
 		b.StopTimer()
-		exp := path.Join(tmp, "export")
+		exp := filepath.Join(tmp, "export")
 		for i := 0; i < b.N; i++ {
 			// Order the loop this way to make it easy to disable final cleanup, to
 			// ease manual inspection

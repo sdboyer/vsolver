@@ -82,7 +82,7 @@ func remakeNaiveSM(osm *SourceMgr, t *testing.T) (*SourceMgr, func()) {
 
 func init() {
 	_, filename, _, _ := runtime.Caller(1)
-	bd = path.Dir(filename)
+	bd = filepath.Dir(filename)
 }
 
 func TestSourceManagerInit(t *testing.T) {
@@ -103,7 +103,7 @@ func TestSourceManagerInit(t *testing.T) {
 		t.Errorf("Should have gotten CouldNotCreateLockError error type, but got %T", te)
 	}
 
-	if _, err = os.Stat(path.Join(cpath, "sm.lock")); err != nil {
+	if _, err = os.Stat(filepath.Join(cpath, "sm.lock")); err != nil {
 		t.Errorf("Global cache lock file not created correctly")
 	}
 
@@ -113,7 +113,7 @@ func TestSourceManagerInit(t *testing.T) {
 		t.Errorf("removeAll failed: %s", err)
 	}
 
-	if _, err = os.Stat(path.Join(cpath, "sm.lock")); !os.IsNotExist(err) {
+	if _, err = os.Stat(filepath.Join(cpath, "sm.lock")); !os.IsNotExist(err) {
 		t.Errorf("Global cache lock file not cleared correctly on Release()")
 		t.FailNow()
 	}
