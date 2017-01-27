@@ -300,7 +300,9 @@ func (sm *SourceMgr) doRelease() {
 	sm.glock.Lock()
 
 	// Close the file handle for the lock file
-	sm.lf.Close()
+	if sm.lf != nil {
+		sm.lf.Close()
+	}
 	// Remove the lock file from disk
 	os.Remove(filepath.Join(sm.cachedir, "sm.lock"))
 	// Close the qch, if non-nil, so the signal handlers run out. This will
