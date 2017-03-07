@@ -6,7 +6,6 @@ import (
 	"log"
 	"sort"
 	"strings"
-
 	"github.com/armon/go-radix"
 )
 
@@ -352,6 +351,7 @@ func (s *solver) solve() (map[atom]map[string]struct{}, error) {
 			break
 		}
 
+
 		// This split is the heart of "bimodal solving": we follow different
 		// satisfiability and selection paths depending on whether we've already
 		// selected the base project/repo that came off the unselected queue.
@@ -361,34 +361,43 @@ func (s *solver) solve() (map[atom]map[string]struct{}, error) {
 		// that has yet to be selected.)
 		if awp, is := s.sel.selected(bmi.id); !is {
 			s.mtr.push("new-atom")
-			// Analysis path for when we haven't selected the project yet - need
-			// to create a version queue.
-			queue, err := s.createVersionQueue(bmi)
-			if err != nil {
-				// Err means a failure somewhere down the line; try backtracking.
-				s.traceStartBacktrack(bmi, err, false)
+
+			if !bmi.fromRoot {
+				// Here we have a flat package, and we don't need to check any dependencies
+				// for it. There is nothing to check here, so remove it.
+				s.unsel.remove(bmi)
 				s.mtr.pop()
-				if s.backtrack() {
-					// backtracking succeeded, move to the next unselected id
-					continue
+				continue
+			}else {
+				// Analysis path for when we haven't selected the project yet - need
+				// to create a version queue. This is only for packages that have nested packages.
+				queue, err := s.createVersionQueue(bmi)
+				if err != nil {
+					// Err means a failure somewhere down the line; try backtracking.
+					s.traceStartBacktrack(bmi, err, false)
+					s.mtr.pop()
+					if s.backtrack() {
+						// backtracking succeeded, move to the next unselected id
+						continue
+					}
+					return nil, err
 				}
-				return nil, err
-			}
 
-			if queue.current() == nil {
-				panic("canary - queue is empty, but flow indicates success")
-			}
+				if queue.current() == nil {
+					panic("canary - queue is empty, but flow indicates success")
+				}
 
-			awp := atomWithPackages{
-				a: atom{
-					id: queue.id,
-					v:  queue.current(),
-				},
-				pl: bmi.pl,
+				awp := atomWithPackages{
+					a: atom{
+						id: queue.id,
+						v:  queue.current(),
+					},
+					pl: bmi.pl,
+				}
+				s.selectAtom(awp, false)
+				s.vqs = append(s.vqs, queue)
+				s.mtr.pop()
 			}
-			s.selectAtom(awp, false)
-			s.vqs = append(s.vqs, queue)
-			s.mtr.pop()
 		} else {
 			s.mtr.push("add-atom")
 			// We're just trying to add packages to an already-selected project.
@@ -761,6 +770,8 @@ func (s *solver) findValidVersion(q *versionQueue, pl []string) error {
 		// if it is, so panic immediately
 		panic("version queue is empty, should not happen")
 	}
+
+
 
 	faillen := len(q.fails)
 
