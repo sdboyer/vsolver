@@ -99,9 +99,9 @@ func (s *solver) traceFinish(sol solution, err error) {
 		for _, lp := range sol.Projects() {
 			pkgcount += len(lp.pkgs)
 		}
-		s.tl.Printf("%s%s found solution with %v packages from %v projects", innerIndent, successChar, pkgcount, len(sol.Projects()))
+		s.tl.Printf("(0) %s%s found solution with %v packages from %v projects", innerIndent, successChar, pkgcount, len(sol.Projects()))
 	} else {
-		s.tl.Printf("%s%s solving failed", innerIndent, failChar)
+		s.tl.Printf("(0) %s%s solving failed", innerIndent, failChar)
 	}
 }
 
